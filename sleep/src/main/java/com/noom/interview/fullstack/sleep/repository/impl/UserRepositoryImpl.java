@@ -9,29 +9,36 @@ import org.springframework.stereotype.Repository;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Collection;
+import java.util.UUID;
 
 @Repository
 @RequiredArgsConstructor
 public class UserRepositoryImpl implements UserRepository {
 
+    private static final String ID_COLUMN = "id";
+    private static final String USERNAME_COLUMN = "username";
+
     private final JdbcTemplate jdbcTemplate;
 
     @Override
-    public UserEntity insert(UserEntity entity) throws SQLException {
-        var sql = "insert into t_user (username) values (?) returning id";
-        Long id = jdbcTemplate.queryForObject(sql, Long.class, entity.getUsername());
-        return entity.setId(id);
+    public UserEntity insert(UserEntity entity) {
+        var sql = "insert into t_user (%s, %s) values (?, ?)"
+                .formatted(ID_COLUMN, USERNAME_COLUMN);
+        var newId = UUID.randomUUID();
+        jdbcTemplate.update(sql, newId, entity.getUsername());
+        return entity.setId(newId);
     }
 
     @Override
-    public Collection<UserEntity> fetchAll() throws SQLException {
-        var sql = "select id, username from t_user";
+    public Collection<UserEntity> fetchAll() {
+        var sql = "select %s, %s from t_user"
+                .formatted(ID_COLUMN, USERNAME_COLUMN);
         return jdbcTemplate.query(sql, (rs, rowNum) -> mapRow(rs));
     }
 
     private UserEntity mapRow(ResultSet rs) throws SQLException {
         return new UserEntity()
-                .setId(rs.getLong("id"))
-                .setUsername(rs.getString("username"));
+                .setId(rs.getObject(ID_COLUMN, UUID.class))
+                .setUsername(rs.getString(USERNAME_COLUMN));
     }
 }

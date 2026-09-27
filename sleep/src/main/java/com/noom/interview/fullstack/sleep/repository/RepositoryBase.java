@@ -1,11 +1,10 @@
 package com.noom.interview.fullstack.sleep.repository;
 
-import java.sql.SQLException;
 import java.util.Collection;
 
-public interface RepositoryBase<T, TID> {
+public interface RepositoryBase<T> {
 
-    T insert(T entity) throws SQLException;
+    T insert(T entity);
 
-    Collection<T> fetchAll() throws SQLException;
+    Collection<T> fetchAll();
 }

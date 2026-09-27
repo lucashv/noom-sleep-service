@@ -10,41 +10,59 @@ import org.springframework.stereotype.Repository;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Collection;
+import java.util.UUID;
 
 @Repository
 @RequiredArgsConstructor
 public class SleepLogRepositoryImpl implements SleepLogRepository {
 
+    private static final String ID_COLUMN = "id";
+    private static final String USER_ID_COLUMN = "user_id";
+    private static final String SLEEP_DATE_COLUMN = "sleep_date";
+    private static final String STARTED_AT_COLUMN = "started_at";
+    private static final String ENDED_AT_COLUMN = "ended_at";
+    private static final String FEELING_COLUMN = "feeling";
+
     private final JdbcTemplate jdbcTemplate;
 
     @Override
-    public SleepLogEntity insert(SleepLogEntity entity) throws SQLException {
+    public SleepLogEntity insert(SleepLogEntity entity) {
         var sql = """
-                insert into t_sleep_log (user_id, started_at, ended_at, feeling)
-                values (?, ?, ?, ? )
-                returning id
-                """;
-        Long id = jdbcTemplate.queryForObject(sql, Long.class,
+                insert into t_sleep_log (%s, %s, %s, %s, %s, %s)
+                values (?, ?, ?, ?, ?, ?)
+                """.formatted(ID_COLUMN, USER_ID_COLUMN, SLEEP_DATE_COLUMN, STARTED_AT_COLUMN,
+                ENDED_AT_COLUMN, FEELING_COLUMN);
+        var newId = UUID.randomUUID();
+        jdbcTemplate.update(sql,
+                newId,
                 entity.getUser().getId(),
+                entity.getSleepDate(),
                 entity.getStartedAt(),
                 entity.getEndedAt(),
                 entity.getFeeling());
-        return entity.setId(id);
+        return entity.setId(newId);
     }
 
     @Override
-    public Collection<SleepLogEntity> fetchAll() throws SQLException {
-        var sql = "select id, user_id, started_at, ended_at, feeling from t_sleep_log";
+    public Collection<SleepLogEntity> fetchAll() {
+        var sql = "select %s, %s, %s, %s, %s, %s from t_sleep_log"
+                .formatted(ID_COLUMN, USER_ID_COLUMN, SLEEP_DATE_COLUMN, STARTED_AT_COLUMN,
+                        ENDED_AT_COLUMN, FEELING_COLUMN);
         return jdbcTemplate.query(sql, (rs, rowNum) -> mapRow(rs));
     }
 
     private SleepLogEntity mapRow(ResultSet rs) throws SQLException {
-        var user = new UserEntity().setId(rs.getLong("user_id"));
+        var user = new UserEntity().setId(rs.getObject(USER_ID_COLUMN, UUID.class));
+
+        var startedAt = rs.getTimestamp(STARTED_AT_COLUMN);
+        var endedAt = rs.getTimestamp(ENDED_AT_COLUMN);
+
         return new SleepLogEntity()
-                .setId(rs.getLong("id"))
+                .setId(rs.getObject(ID_COLUMN, UUID.class))
                 .setUser(user)
-                .setStartedAt(rs.getTimestamp("started_at").toLocalDateTime())
-                .setEndedAt(rs.getTimestamp("ended_at").toLocalDateTime())
-                .setFeeling(rs.getInt("feeling"));
+                .setSleepDate(rs.getDate(SLEEP_DATE_COLUMN).toLocalDate())
+                .setStartedAt(startedAt != null ? startedAt.toLocalDateTime() : null)
+                .setEndedAt(endedAt != null ? endedAt.toLocalDateTime() : null)
+                .setFeeling(rs.getString(FEELING_COLUMN));
     }
 }
