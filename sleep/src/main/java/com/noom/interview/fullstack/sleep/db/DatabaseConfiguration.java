@@ -1,5 +1,6 @@
 package com.noom.interview.fullstack.sleep.db;
 
+import com.noom.interview.fullstack.sleep.SleepApplication;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.jdbc.DataSourceBuilder;
 import org.springframework.context.annotation.Bean;
@@ -12,7 +13,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 
 @Configuration
-@Profile("!$UNIT_TEST_PROFILE")
+@Profile("!" + SleepApplication.UNIT_TEST_PROFILE)
 public class DatabaseConfiguration {
     @Value("${spring.datasource.url}")
     private String url;
