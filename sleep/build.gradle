@@ -32,6 +32,7 @@ dependencies {
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testAnnotationProcessor 'org.projectlombok:lombok'
     testImplementation 'com.tngtech.archunit:archunit:1.5.1'
+    testRuntimeOnly 'com.h2database:h2'
 }
 
 tasks.named('bootBuildImage') {
