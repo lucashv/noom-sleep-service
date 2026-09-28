@@ -46,7 +46,8 @@ public class SleepLogRepositoryImplTest {
 
         assertThat(inserted.getId()).isNotNull();
 
-        var fetchedLogs = sleepLogRepository.fetchAll();
+        var fetchedLogs = sleepLogRepository.filterByUserAndDateRange(
+                user.getId(), LocalDate.of(2026, 9, 26), LocalDate.of(2026, 9, 26));
         assertThat(fetchedLogs).hasSize(1);
 
         var fetched = fetchedLogs.iterator().next();
@@ -59,8 +60,9 @@ public class SleepLogRepositoryImplTest {
     }
 
     @Test
-    void fetchAllReturnsEverySleepLogAndMapsNullableFields() {
+    void filterByUserAndDateRangeReturnsMatchingLogsAndMapsNullableFields() {
         var user = userRepository.insert(new UserEntity().setUsername("test-user"));
+        var otherUser = userRepository.insert(new UserEntity().setUsername("other-user"));
         var first = sleepLogRepository.insert(new SleepLogEntity()
                 .setUser(user)
                 .setSleepDate(LocalDate.of(2026, 9, 25))
@@ -73,8 +75,15 @@ public class SleepLogRepositoryImplTest {
                 .setStartedAt(LocalDateTime.of(2026, 9, 25, 23, 15))
                 .setEndedAt(null)
                 .setFeeling(null));
+        sleepLogRepository.insert(new SleepLogEntity()
+                .setUser(otherUser)
+                .setSleepDate(LocalDate.of(2026, 9, 26))
+                .setStartedAt(LocalDateTime.of(2026, 9, 25, 22, 0))
+                .setEndedAt(LocalDateTime.of(2026, 9, 26, 6, 0))
+                .setFeeling("OK"));
 
-        var fetchedLogs = sleepLogRepository.fetchAll();
+        var fetchedLogs = sleepLogRepository.filterByUserAndDateRange(
+                user.getId(), LocalDate.of(2026, 9, 25), LocalDate.of(2026, 9, 26));
 
         assertThat(fetchedLogs).containsExactlyInAnyOrder(
                 new SleepLogEntity()
@@ -95,8 +104,31 @@ public class SleepLogRepositoryImplTest {
     }
 
     @Test
-    void fetchAllReturnsEmptyCollectionWhenNoSleepLogsExist() {
-        assertThat(sleepLogRepository.fetchAll()).isEmpty();
+    void filterByUserAndDateRangeReturnsEmptyWhenNoSleepLogsMatch() {
+        assertThat(sleepLogRepository.filterByUserAndDateRange(
+                UUID.randomUUID(), LocalDate.of(2026, 9, 25), LocalDate.of(2026, 9, 26)))
+                .isEmpty();
+    }
+
+    @Test
+    void insertRejectsSecondSleepLogForSameUserAndDate() {
+        var user = userRepository.insert(new UserEntity().setUsername("test-user"));
+        var sleepDate = LocalDate.of(2026, 9, 26);
+        var sleepLog = new SleepLogEntity()
+                .setUser(user)
+                .setSleepDate(sleepDate)
+                .setStartedAt(LocalDateTime.of(2026, 9, 25, 22, 30))
+                .setEndedAt(LocalDateTime.of(2026, 9, 26, 6, 45))
+                .setFeeling("GOOD");
+        sleepLogRepository.insert(sleepLog);
+
+        assertThatThrownBy(() -> sleepLogRepository.insert(new SleepLogEntity()
+                .setUser(user)
+                .setSleepDate(sleepDate)
+                .setStartedAt(LocalDateTime.of(2026, 9, 25, 23, 0))
+                .setEndedAt(LocalDateTime.of(2026, 9, 26, 7, 0))
+                .setFeeling("OK")))
+                .isInstanceOf(DataIntegrityViolationException.class);
     }
 
     @Test

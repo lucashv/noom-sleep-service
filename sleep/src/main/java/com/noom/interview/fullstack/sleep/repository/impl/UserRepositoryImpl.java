@@ -8,7 +8,7 @@ import org.springframework.stereotype.Repository;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Collection;
+import java.util.Optional;
 import java.util.UUID;
 
 @Repository
@@ -30,10 +30,12 @@ public class UserRepositoryImpl implements UserRepository {
     }
 
     @Override
-    public Collection<UserEntity> fetchAll() {
-        var sql = "select %s, %s from t_user"
-                .formatted(ID_COLUMN, USERNAME_COLUMN);
-        return jdbcTemplate.query(sql, (rs, rowNum) -> mapRow(rs));
+    public Optional<UserEntity> findById(UUID userId) {
+        var sql = "select %s, %s from t_user where %s = ?"
+                .formatted(ID_COLUMN, USERNAME_COLUMN, ID_COLUMN);
+        return jdbcTemplate.query(sql, (rs, rowNum) -> mapRow(rs), userId)
+                .stream()
+                .findFirst();
     }
 
     private UserEntity mapRow(ResultSet rs) throws SQLException {
