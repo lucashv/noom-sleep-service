@@ -60,7 +60,7 @@ public class SleepLogRepositoryImplTest {
     }
 
     @Test
-    void filterByUserAndDateRangeReturnsMatchingLogsAndMapsNullableFields() {
+    void filterByUserAndDateRangeReturnsMatchingLogs() {
         var user = userRepository.insert(new UserEntity().setUsername("test-user"));
         var otherUser = userRepository.insert(new UserEntity().setUsername("other-user"));
         var first = sleepLogRepository.insert(new SleepLogEntity()
@@ -73,8 +73,8 @@ public class SleepLogRepositoryImplTest {
                 .setUser(user)
                 .setSleepDate(LocalDate.of(2026, 9, 26))
                 .setStartedAt(LocalDateTime.of(2026, 9, 25, 23, 15))
-                .setEndedAt(null)
-                .setFeeling(null));
+                .setEndedAt(LocalDateTime.of(2026, 9, 26, 7, 0))
+                .setFeeling("OK"));
         sleepLogRepository.insert(new SleepLogEntity()
                 .setUser(otherUser)
                 .setSleepDate(LocalDate.of(2026, 9, 26))
@@ -98,8 +98,8 @@ public class SleepLogRepositoryImplTest {
                         .setUser(new UserEntity().setId(user.getId()))
                         .setSleepDate(LocalDate.of(2026, 9, 26))
                         .setStartedAt(LocalDateTime.of(2026, 9, 25, 23, 15))
-                        .setEndedAt(null)
-                        .setFeeling(null)
+                        .setEndedAt(LocalDateTime.of(2026, 9, 26, 7, 0))
+                        .setFeeling("OK")
         );
     }
 
@@ -139,6 +139,32 @@ public class SleepLogRepositoryImplTest {
                 .setStartedAt(LocalDateTime.of(2026, 9, 25, 22, 30))
                 .setEndedAt(LocalDateTime.of(2026, 9, 26, 6, 45))
                 .setFeeling("GOOD");
+
+        assertThatThrownBy(() -> sleepLogRepository.insert(sleepLog))
+                .isInstanceOf(DataIntegrityViolationException.class);
+    }
+
+    @Test
+    void insertRejectsSleepLogWithoutEndTime() {
+        var user = userRepository.insert(new UserEntity().setUsername("test-user"));
+        var sleepLog = new SleepLogEntity()
+                .setUser(user)
+                .setSleepDate(LocalDate.of(2026, 9, 26))
+                .setStartedAt(LocalDateTime.of(2026, 9, 25, 22, 30))
+                .setFeeling("GOOD");
+
+        assertThatThrownBy(() -> sleepLogRepository.insert(sleepLog))
+                .isInstanceOf(DataIntegrityViolationException.class);
+    }
+
+    @Test
+    void insertRejectsSleepLogWithoutFeeling() {
+        var user = userRepository.insert(new UserEntity().setUsername("test-user"));
+        var sleepLog = new SleepLogEntity()
+                .setUser(user)
+                .setSleepDate(LocalDate.of(2026, 9, 26))
+                .setStartedAt(LocalDateTime.of(2026, 9, 25, 22, 30))
+                .setEndedAt(LocalDateTime.of(2026, 9, 26, 6, 45));
 
         assertThatThrownBy(() -> sleepLogRepository.insert(sleepLog))
                 .isInstanceOf(DataIntegrityViolationException.class);

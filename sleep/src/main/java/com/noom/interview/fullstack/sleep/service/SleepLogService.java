@@ -19,6 +19,7 @@ public class SleepLogService {
 
     private static final String SLEEP_LOG_NOT_NULL_ERROR_MESSAGE = "sleepLog should not be null";
     private static final String VALID_USER_ERROR_MESSAGE = "A valid user is required";
+    private static final String SLEEP_DATE_MUST_BE_TODAY_ERROR_MESSAGE = "Sleep date must be today";
     private static final String NO_SLEEPLOG_FOR_LAST_NIGHT_ERROR_MESSAGE = "No SleepLog found for last night";
     private static final String NO_SLEEPLOG_FOR_LAST_30_DAYS_ERROR_MESSAGE = "No SleepLog found for last 30 days";
 
@@ -36,6 +37,10 @@ public class SleepLogService {
         if (sleepLog.getUser() == null || sleepLog.getUser().getId() == null ||
                 userRepository.findById(sleepLog.getUser().getId()).isEmpty()) {
             throw new SleepLogServiceException(VALID_USER_ERROR_MESSAGE);
+        }
+
+        if (!LocalDate.now(clock).equals(sleepLog.getSleepDate())) {
+            throw new SleepLogServiceException(SLEEP_DATE_MUST_BE_TODAY_ERROR_MESSAGE);
         }
 
         var entity = sleepLogModelMapper.modelToEntity(sleepLog);

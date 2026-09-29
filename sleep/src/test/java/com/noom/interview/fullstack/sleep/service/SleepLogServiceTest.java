@@ -95,6 +95,19 @@ class SleepLogServiceTest {
     }
 
     @Test
+    void rejectsSleepLogWhoseSleepDateIsNotToday() {
+        var sleepLog = sleepLog(TODAY.minusDays(1), Feeling.GOOD);
+        sleepLog.setUser(new User().setId(USER_ID));
+        when(userRepository.findById(USER_ID)).thenReturn(Optional.of(new UserEntity().setId(USER_ID)));
+
+        assertThatThrownBy(() -> sleepLogService.createSleepLog(sleepLog))
+                .isInstanceOf(SleepLogServiceException.class)
+                .hasMessage("Sleep date must be today");
+
+        verifyNoInteractions(sleepLogRepository, sleepLogModelMapper);
+    }
+
+    @Test
     void getsLastNightSleepLogForToday() throws Exception {
         var entity = new SleepLogEntity();
         var expected = sleepLog(TODAY, Feeling.OK);
