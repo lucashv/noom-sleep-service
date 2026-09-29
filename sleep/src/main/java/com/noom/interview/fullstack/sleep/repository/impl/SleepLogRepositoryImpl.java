@@ -9,7 +9,8 @@ import org.springframework.stereotype.Repository;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Collection;
+import java.time.LocalDate;
+import java.util.List;
 import java.util.UUID;
 
 @Repository
@@ -44,11 +45,12 @@ public class SleepLogRepositoryImpl implements SleepLogRepository {
     }
 
     @Override
-    public Collection<SleepLogEntity> fetchAll() {
-        var sql = "select %s, %s, %s, %s, %s, %s from t_sleep_log"
+    public List<SleepLogEntity> filterByUserAndSleepDateRange(
+            UUID userId, LocalDate from, LocalDate to) {
+        var sql = "select %s, %s, %s, %s, %s, %s from t_sleep_log where %s = ? and %s between ? and ?"
                 .formatted(ID_COLUMN, USER_ID_COLUMN, SLEEP_DATE_COLUMN, STARTED_AT_COLUMN,
-                        ENDED_AT_COLUMN, FEELING_COLUMN);
-        return jdbcTemplate.query(sql, (rs, rowNum) -> mapRow(rs));
+                        ENDED_AT_COLUMN, FEELING_COLUMN, USER_ID_COLUMN, SLEEP_DATE_COLUMN);
+        return jdbcTemplate.query(sql, (rs, rowNum) -> mapRow(rs), userId, from, to);
     }
 
     private SleepLogEntity mapRow(ResultSet rs) throws SQLException {

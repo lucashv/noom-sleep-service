@@ -10,6 +10,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import org.junit.jupiter.api.Test;
 
+import java.util.UUID;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest
@@ -26,25 +28,23 @@ public class UserRepositoryImplTest {
 
         assertThat(inserted.getId()).isNotNull();
         assertThat(inserted.getUsername()).isEqualTo("test-user");
-        assertThat(userRepository.fetchAll())
-                .containsExactly(new UserEntity()
-                        .setId(inserted.getId())
-                        .setUsername("test-user"));
+        assertThat(userRepository.findById(inserted.getId()))
+                .contains(new UserEntity().setId(inserted.getId()).setUsername("test-user"));
     }
 
     @Test
-    void fetchAllReturnsEmptyCollectionWhenNoUsersExist() {
-        assertThat(userRepository.fetchAll()).isEmpty();
+    void findByIdReturnsEmptyWhenUserDoesNotExist() {
+        assertThat(userRepository.findById(UUID.randomUUID())).isEmpty();
     }
 
     @Test
-    void fetchAllReturnsEveryUser() {
-        var first = userRepository.insert(new UserEntity().setUsername("first-user"));
-        var second = userRepository.insert(new UserEntity().setUsername("second-user"));
+    void findByIdReturnsOnlyRequestedUser() {
+        var requested = userRepository.insert(new UserEntity().setUsername("requested-user"));
+        userRepository.insert(new UserEntity().setUsername("other-user"));
 
-        assertThat(userRepository.fetchAll()).containsExactlyInAnyOrder(
-                new UserEntity().setId(first.getId()).setUsername("first-user"),
-                new UserEntity().setId(second.getId()).setUsername("second-user")
-        );
+        assertThat(userRepository.findById(requested.getId()))
+                .contains(new UserEntity()
+                        .setId(requested.getId())
+                        .setUsername("requested-user"));
     }
 }
