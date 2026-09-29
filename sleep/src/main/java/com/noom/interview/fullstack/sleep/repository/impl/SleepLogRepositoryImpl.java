@@ -10,7 +10,7 @@ import org.springframework.stereotype.Repository;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDate;
-import java.util.Collection;
+import java.util.List;
 import java.util.UUID;
 
 @Repository
@@ -45,7 +45,7 @@ public class SleepLogRepositoryImpl implements SleepLogRepository {
     }
 
     @Override
-    public Collection<SleepLogEntity> filterByUserAndDateRange(
+    public List<SleepLogEntity> filterByUserAndSleepDateRange(
             UUID userId, LocalDate from, LocalDate to) {
         var sql = "select %s, %s, %s, %s, %s, %s from t_sleep_log where %s = ? and %s between ? and ?"
                 .formatted(ID_COLUMN, USER_ID_COLUMN, SLEEP_DATE_COLUMN, STARTED_AT_COLUMN,

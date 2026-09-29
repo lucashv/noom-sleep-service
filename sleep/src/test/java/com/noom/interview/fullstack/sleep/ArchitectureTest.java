@@ -28,7 +28,7 @@ public class ArchitectureTest {
                 .importPackages(mainPackage);
 
         Architectures.layeredArchitecture()
-                .consideringAllDependencies()
+                .consideringOnlyDependenciesInLayers()
                 .layer(CONTROLLER_LAYER).definedBy(CONTROLLER_PACKAGE)
                 .layer(SERVICE_LAYER).definedBy(SERVICE_PACKAGE)
                 .layer(REPOSITORY_LAYER).definedBy(REPOSITORY_PACKAGE)

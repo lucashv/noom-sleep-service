@@ -46,7 +46,7 @@ public class SleepLogRepositoryImplTest {
 
         assertThat(inserted.getId()).isNotNull();
 
-        var fetchedLogs = sleepLogRepository.filterByUserAndDateRange(
+        var fetchedLogs = sleepLogRepository.filterByUserAndSleepDateRange(
                 user.getId(), LocalDate.of(2026, 9, 26), LocalDate.of(2026, 9, 26));
         assertThat(fetchedLogs).hasSize(1);
 
@@ -82,7 +82,7 @@ public class SleepLogRepositoryImplTest {
                 .setEndedAt(LocalDateTime.of(2026, 9, 26, 6, 0))
                 .setFeeling("OK"));
 
-        var fetchedLogs = sleepLogRepository.filterByUserAndDateRange(
+        var fetchedLogs = sleepLogRepository.filterByUserAndSleepDateRange(
                 user.getId(), LocalDate.of(2026, 9, 25), LocalDate.of(2026, 9, 26));
 
         assertThat(fetchedLogs).containsExactlyInAnyOrder(
@@ -105,7 +105,7 @@ public class SleepLogRepositoryImplTest {
 
     @Test
     void filterByUserAndDateRangeReturnsEmptyWhenNoSleepLogsMatch() {
-        assertThat(sleepLogRepository.filterByUserAndDateRange(
+        assertThat(sleepLogRepository.filterByUserAndSleepDateRange(
                 UUID.randomUUID(), LocalDate.of(2026, 9, 25), LocalDate.of(2026, 9, 26)))
                 .isEmpty();
     }
