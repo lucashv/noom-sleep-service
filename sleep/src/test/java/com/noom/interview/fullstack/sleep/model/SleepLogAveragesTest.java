@@ -55,6 +55,14 @@ class SleepLogAveragesTest {
                 .withMessage("At least one sleep log is required");
     }
 
+    @Test
+    void rejectsAnInvalidDateRange() {
+        assertThatIllegalArgumentException()
+                .isThrownBy(() -> new SleepLogAverages(PERIOD_TO, PERIOD_FROM, List.of(
+                        sleepLog(PERIOD_FROM, LocalTime.of(22, 0), LocalTime.of(6, 0), Feeling.GOOD))))
+                .withMessage("periodTo should not be before periodFrom");
+    }
+
     private SleepLog sleepLog(LocalDate date, LocalTime bedtime, LocalTime wakeUp, Feeling feeling) {
         var wakeUpDate = wakeUp.isAfter(bedtime) ? date : date.plusDays(1);
         return new SleepLog()

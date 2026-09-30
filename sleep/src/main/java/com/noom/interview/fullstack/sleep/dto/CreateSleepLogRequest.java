@@ -1,13 +1,17 @@
 package com.noom.interview.fullstack.sleep.dto;
 
-import com.noom.interview.fullstack.sleep.model.Feeling;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 
 @Data
 public class CreateSleepLogRequest {
-    private Date from;
-    private Date to;
-    private Feeling feeling;
+    @NotNull
+    private LocalDateTime from;
+    @NotNull
+    private LocalDateTime to;
+    @NotBlank
+    private String feeling;
 }
