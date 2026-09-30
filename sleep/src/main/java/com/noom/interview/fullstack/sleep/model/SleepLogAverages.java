@@ -9,6 +9,7 @@ import java.time.LocalTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Function;
 
 @Getter
@@ -26,9 +27,12 @@ public class SleepLogAverages {
             LocalDate periodFrom,
             LocalDate periodTo,
             List<SleepLog> sleepLogList) {
-        this.periodFrom = periodFrom;
-        this.periodTo = periodTo;
-        this.sleepLogList = sleepLogList;
+        this.periodFrom = Objects.requireNonNull(periodFrom, "periodFrom should not be null");
+        this.periodTo = Objects.requireNonNull(periodTo, "periodTo should not be null");
+        if (periodTo.isBefore(periodFrom)) {
+            throw new IllegalArgumentException("periodTo should not be before periodFrom");
+        }
+        this.sleepLogList = List.copyOf(Objects.requireNonNull(sleepLogList, "sleepLogList should not be null"));
         this.feelingFrequencies = new HashMap<>();
 
         calculateAverages();

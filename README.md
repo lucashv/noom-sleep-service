@@ -47,3 +47,30 @@ The assignment is to:
 Dockerfiles are set up for your convenience for running the whole project. You will need docker and ports 5432 (Postgres) and 8080 (API).
 
 To run everything, simply execute `docker-compose up`. To build and run, execute `docker-compose up --build`.
+
+## Testing the API
+
+Sleep-log endpoints require an `X-User-Id` header containing the UUID of an
+existing user. Start the services with `docker-compose up --build`, then create
+a reusable local test user and run the smoke test:
+
+```sh
+cd sleep
+./scripts/create-test-user.sh
+USER_ID=00000000-0000-4000-8000-000000000001 ./scripts/test-api.sh
+```
+
+The script creates today's sleep log and checks the last-night and 30-day
+averages endpoints. The create request may return `409` if that user already
+has a log for today. `create-test-user.sh` is for local development/testing;
+it inserts a fixed UUID into the local database and does nothing if that ID
+already exists. Set `USER_ID` and `USERNAME` to override its defaults.
+
+The API exposes `POST /sleeplogs`, `GET /sleeplogs`, and
+`GET /sleeplogs/averages`. Create requests send ISO local date-times for
+`from` and `to` (for example, `2026-09-28T22:30:00`), plus a `feeling`
+(`BAD`, `OK`, or `GOOD`).
+
+Create and last-night responses include `sleepDate`, a `timeInBedInterval`
+object with `from` and `to` local date-times, and `totalTimeInBedMinutes` as
+an integer suitable for frontend formatting.

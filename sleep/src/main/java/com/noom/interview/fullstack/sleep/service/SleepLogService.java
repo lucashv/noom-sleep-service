@@ -36,7 +36,7 @@ public class SleepLogService {
 
         if (sleepLog.getUser() == null || sleepLog.getUser().getId() == null ||
                 userRepository.findById(sleepLog.getUser().getId()).isEmpty()) {
-            throw new SleepLogServiceException(VALID_USER_ERROR_MESSAGE);
+            throw new SleepLogServiceException(VALID_USER_ERROR_MESSAGE, SleepLogServiceException.Type.NOT_FOUND);
         }
 
         if (!LocalDate.now(clock).equals(sleepLog.getSleepDate())) {
@@ -58,7 +58,8 @@ public class SleepLogService {
         var sleepLogList = sleepLogRepository.filterByUserAndSleepDateRange(userId, today, today);
 
         if (sleepLogList.isEmpty()) {
-            throw new SleepLogServiceException(NO_SLEEPLOG_FOR_LAST_NIGHT_ERROR_MESSAGE);
+            throw new SleepLogServiceException(
+                    NO_SLEEPLOG_FOR_LAST_NIGHT_ERROR_MESSAGE, SleepLogServiceException.Type.NOT_FOUND);
         }
 
         return sleepLogModelMapper.entityToModel(sleepLogList.get(0));
@@ -75,7 +76,8 @@ public class SleepLogService {
         var sleepLogEntityList = sleepLogRepository.filterByUserAndSleepDateRange(userId, from, to);
 
         if (sleepLogEntityList.isEmpty()) {
-            throw new SleepLogServiceException(NO_SLEEPLOG_FOR_LAST_30_DAYS_ERROR_MESSAGE);
+            throw new SleepLogServiceException(
+                    NO_SLEEPLOG_FOR_LAST_30_DAYS_ERROR_MESSAGE, SleepLogServiceException.Type.NOT_FOUND);
         }
 
         var sleepLogList = sleepLogEntityList
